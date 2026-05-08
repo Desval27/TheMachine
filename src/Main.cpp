@@ -4,9 +4,9 @@
 
 #include <Monkey.h>
 
+#include <Pages/DrumVoicePage.h>
+#include <TheMachineApp.h>
 #include <UIOverlord.h>
-#include <Pages/DummyPage.h>
-#include <App.h>
 
 using namespace daisysp;
 using namespace daisy;
@@ -17,74 +17,110 @@ using namespace daisy;
 #define POT_COUNT 4
 #define VOICE_COUNT 4
 
-using MyApp = App;
-using MyPage = DummyPage;
-using MyOverlord =
-    UIOverlord<SSD130xI2c128x64Driver, ENCODER_COUNT, BUTTON_COUNT, POT_COUNT,
-               ENCODER_1, // MenuEncoder
-               BUTTON_1,  // OK Button
-               BUTTON_2,  // Cancel Button
-               true>;
+using MyApp = App<VOICE_COUNT>;
+using MyOverlord = UIOverlord<SSD130xI2c128x64Driver,
+                              ENCODER_COUNT,
+                              BUTTON_COUNT,
+                              POT_COUNT,
+                              ENCODER_1, // MenuEncoder
+                              BUTTON_1,  // OK Button
+                              BUTTON_2,  // Cancel Button
+                              true>;
 
 DaisySeed hw;
-MyApp &theApp = MyApp::getInstance();
+Metro clock;
 
+MyApp& theApp = MyApp::getInstance();
 
 MyOverlord uiOverlord;
-MyPage page;
+FullScreenItemMenu voiceMenu;
+std::array<DrumVoicePage, 3> voicePages;
+
+////////////////////////////////////////////////////////////////////////////////
+// UI & Menu Structure
+////////////////////////////////////////////////////////////////////////////////
+AbstractMenu::ItemConfig voiceMenuItems[] = {
+  { .type = AbstractMenu::ItemType::openUiPageItem,
+    .text = "KICK",
+    .asOpenUiPageItem{ &voicePages[0] } },
+  { .type = AbstractMenu::ItemType::openUiPageItem,
+    .text = "SNARE",
+    .asOpenUiPageItem{ &voicePages[1] } },
+  { .type = AbstractMenu::ItemType::openUiPageItem,
+    .text = "HAT",
+    .asOpenUiPageItem{ &voicePages[2] } },
+};
 
 const MyOverlord::EncoderConfig encoderConfig[ENCODER_COUNT] = {
-    {seed::D20, seed::D16},
+  { seed::D20, seed::D16 },
 };
 const MyOverlord::ButtonConfig buttonConfig[BUTTON_COUNT] = {
-    {seed::D19}, // Encoder
-    {seed::D17}, {seed::D18}, {seed::D15}, {seed::D21},
+  { seed::D19 }, // Encoder
+  { seed::D17 }, { seed::D18 }, { seed::D15 }, { seed::D21 },
 };
 const MyOverlord::PotConfig potConfig[POT_COUNT] = {
-    {seed::A7},
-    {seed::A8},
-    {seed::A9},
-    {seed::A10},
+  { seed::A7 },
+  { seed::A8 },
+  { seed::A9 },
+  { seed::A10 },
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main Audio Loop
 ////////////////////////////////////////////////////////////////////////////////
-void AudioCallback(AudioHandle::InterleavingInputBuffer in,
-                   AudioHandle::InterleavingOutputBuffer out, size_t size) {
+void
+AudioCallback(AudioHandle::InterleavingInputBuffer in,
+              AudioHandle::InterleavingOutputBuffer out,
+              size_t size)
+{
   uiOverlord.ProcessControls();
 
   // Prepare the audio block
   for (size_t i = 0; i < size; i += 2) {
-    auto [sigL, sigR] = theApp.Process();
-
+    bool t = clock.Process();
+    auto [sigL, sigR] = theApp.Process(t);
     out[i] = sigL;
     out[i + 1] = sigR;
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief 
-/// @param sample_rate 
-void InitComponents(float sample_rate) {
+/// @brief
+/// @param sample_rate
+void
+InitComponents(float sample_rate)
+{
+  clock.Init(2.f, sample_rate);
+  //  clock.Init(BPM / 60.0F, sample_rate);
   theApp.Init(sample_rate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief 
-/// @param sample_rate 
-void InitUi(float sample_rate) {
+/// @brief
+/// @param sample_rate
+void
+InitUi(float sample_rate)
+{
+  voicePages[0].Init(theApp.kick_);
+  voicePages[1].Init(theApp.snare_);
+  voicePages[2].Init(theApp.hat_);
 
-  uiOverlord.Init(sample_rate, page, &hw.adc, encoderConfig, buttonConfig,
-                  potConfig);
+  voiceMenu.Init(voiceMenuItems,
+                 ArrayLen(voiceMenuItems),
+                 AbstractMenu::Orientation::leftRightSelectUpDownModify,
+                 true);
+
+  uiOverlord.Init(
+    sample_rate, voiceMenu, &hw.adc, encoderConfig, buttonConfig, potConfig);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief 
-/// @param  
-/// @return 
-int main(void) {
+/// @brief
+/// @param
+/// @return
+int
+main(void)
+{
   hw.Configure();
   hw.Init();
 
