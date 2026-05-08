@@ -2,7 +2,7 @@ TARGET = TheMachine
 #APP_TYPE = BOOT_QSPI
 
 USE_DAISYSP_LGPL = 1
-USE_DEBUG = 0
+DEBUG = 1
 PLATFORM = DAISY_SEED
 
 # Library Locations

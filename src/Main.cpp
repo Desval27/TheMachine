@@ -6,18 +6,19 @@
 
 #include <Pages/DrumVoicePage.h>
 #include <TheMachineApp.h>
+#include <MainPage.h>
 #include <UIOverlord.h>
 
 using namespace daisysp;
 using namespace daisy;
 
-#define BPM 60.0f
+#define BPM 120.0F
 #define ENCODER_COUNT 1
 #define BUTTON_COUNT 5
 #define POT_COUNT 4
-#define VOICE_COUNT 4
 
-using MyApp = App<VOICE_COUNT>;
+using MyApp = App<>;
+using MyMainPage = MainPage<MyApp>;
 using MyOverlord = UIOverlord<SSD130xI2c128x64Driver,
                               ENCODER_COUNT,
                               BUTTON_COUNT,
@@ -33,6 +34,7 @@ Metro clock;
 MyApp& theApp = MyApp::getInstance();
 
 MyOverlord uiOverlord;
+MyMainPage mainPage;
 FullScreenItemMenu voiceMenu;
 std::array<DrumVoicePage, 3> voicePages;
 
@@ -90,8 +92,7 @@ AudioCallback(AudioHandle::InterleavingInputBuffer in,
 void
 InitComponents(float sample_rate)
 {
-  clock.Init(2.f, sample_rate);
-  //  clock.Init(BPM / 60.0F, sample_rate);
+  clock.Init(BPM / 60.0F, sample_rate);
   theApp.Init(sample_rate);
 }
 
@@ -110,8 +111,10 @@ InitUi(float sample_rate)
                  AbstractMenu::Orientation::leftRightSelectUpDownModify,
                  true);
 
+  mainPage.Init(voiceMenu);
+
   uiOverlord.Init(
-    sample_rate, voiceMenu, &hw.adc, encoderConfig, buttonConfig, potConfig);
+    sample_rate, mainPage, &hw.adc, encoderConfig, buttonConfig, potConfig);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +136,7 @@ main(void)
 
   hw.StartAudio(AudioCallback);
   while (1) {
-    uiOverlord.ProcessUi(); // Update all Ui elements and and event queues.
+    uiOverlord.ProcessUi();
     theApp.Update(System::GetNow());
   }
 }
