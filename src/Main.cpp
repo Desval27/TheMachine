@@ -4,9 +4,9 @@
 
 #include <Monkey.h>
 
+#include <MainPage.h>
 #include <Pages/DrumVoicePage.h>
 #include <TheMachineApp.h>
-#include <MainPage.h>
 #include <UIOverlord.h>
 
 using namespace daisysp;
@@ -36,21 +36,42 @@ MyApp& theApp = MyApp::getInstance();
 MyOverlord uiOverlord;
 MyMainPage mainPage;
 FullScreenItemMenu voiceMenu;
-std::array<DrumVoicePage, 3> voicePages;
+DrumVoicePage voicePage;
+
+struct OpenDrumVoicePageContext
+{
+  DrumVoicePage* page;
+  UI* ui;
+  DrumVoiceConfig* config;
+};
+
+void
+OpenDrumVoicePage(void* rawContext)
+{
+  auto* context = static_cast<OpenDrumVoicePageContext*>(rawContext);
+  context->page->Bind(*context->config);
+  context->ui->OpenPage(*context->page);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // UI & Menu Structure
 ////////////////////////////////////////////////////////////////////////////////
+OpenDrumVoicePageContext voicePageContexts[] = {
+  { &voicePage, &uiOverlord.GetUi(), &theApp.kick_.config_ },
+  { &voicePage, &uiOverlord.GetUi(), &theApp.snare_.config_ },
+  { &voicePage, &uiOverlord.GetUi(), &theApp.hat_.config_ },
+};
+
 AbstractMenu::ItemConfig voiceMenuItems[] = {
-  { .type = AbstractMenu::ItemType::openUiPageItem,
+  { .type = AbstractMenu::ItemType::callbackFunctionItem,
     .text = "KICK",
-    .asOpenUiPageItem{ &voicePages[0] } },
-  { .type = AbstractMenu::ItemType::openUiPageItem,
+    .asCallbackFunctionItem{ OpenDrumVoicePage, &voicePageContexts[0] } },
+  { .type = AbstractMenu::ItemType::callbackFunctionItem,
     .text = "SNARE",
-    .asOpenUiPageItem{ &voicePages[1] } },
-  { .type = AbstractMenu::ItemType::openUiPageItem,
+    .asCallbackFunctionItem{ OpenDrumVoicePage, &voicePageContexts[1] } },
+  { .type = AbstractMenu::ItemType::callbackFunctionItem,
     .text = "HAT",
-    .asOpenUiPageItem{ &voicePages[2] } },
+    .asCallbackFunctionItem{ OpenDrumVoicePage, &voicePageContexts[2] } },
 };
 
 const MyOverlord::EncoderConfig encoderConfig[ENCODER_COUNT] = {
@@ -102,10 +123,6 @@ InitComponents(float sample_rate)
 void
 InitUi(float sample_rate)
 {
-  voicePages[0].Init(theApp.kick_);
-  voicePages[1].Init(theApp.snare_);
-  voicePages[2].Init(theApp.hat_);
-
   voiceMenu.Init(voiceMenuItems,
                  ArrayLen(voiceMenuItems),
                  AbstractMenu::Orientation::leftRightSelectUpDownModify,

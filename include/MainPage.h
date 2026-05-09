@@ -50,8 +50,7 @@ public:
   {
     // Pot id corresponds to voice id
     AppType& theApp = AppType::getInstance();
-    switch(potID)
-    {
+    switch (potID) {
       case POT_1:
         theApp.kick_.config_.volume.SetFrom0to1(newPosition);
         break;

@@ -71,7 +71,7 @@ public:
     bool hatTrigger = isPatternStep && hatPattern_[patternIndex_];
 
     auto [kickL, kickR] = kick_.Process(kickTrigger);
-    //auto [snareL, snareR] = snare_.Process(snareTrigger);
+    // auto [snareL, snareR] = snare_.Process(snareTrigger);
     auto [hatL, hatR] = hat_.Process(hatTrigger);
     float snareL = 0.0F, snareR = 0.0F;
     // float hatL = 0.0F, hatR = 0.0F;
