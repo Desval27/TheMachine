@@ -2,28 +2,28 @@
 
 #include <BasicApp.h>
 #include <DrumVoice.h>
-#include <Monkey.h>
-#include <Music/Music.h>
-#include <Singleton.h>
+#include <monkey.hpp>
+#include <music/music.hpp>
+#include <singleton.hpp>
 
-template<std::size_t MAX_DEGREES = Music::DEF_MAX_DEGREES,
-         std::size_t SCALE_DEGREES = Music::DEF_SCALE_DEGREES,
+template<std::size_t MAX_DEGREES = music::DEF_MAX_DEGREES,
+         std::size_t SCALE_DEGREES = music::DEF_SCALE_DEGREES,
          std::size_t MAX_EVENTS = 16>
-class App
+class TheMachine
   : public BasicApp<MAX_DEGREES, SCALE_DEGREES>
-  , public Singleton<App<MAX_DEGREES, SCALE_DEGREES>>
+  , public Singleton<TheMachine<MAX_DEGREES, SCALE_DEGREES>>
 {
   using BaseApp = BasicApp<MAX_DEGREES, SCALE_DEGREES>;
-  using SingletonApp = Singleton<App<MAX_DEGREES, SCALE_DEGREES>>;
-  using DrumPattern = Music::PatternEventSet<MAX_EVENTS>;
+  using SingletonApp = Singleton<TheMachine<MAX_DEGREES, SCALE_DEGREES>>;
+  using DrumPattern = music::PatternEventSet<MAX_EVENTS>;
 
 private:
-  App()
+  TheMachine()
     : BaseApp()
   {
-    kickPattern_.Clear();
-    snarePattern_.Clear();
-    hatPattern_.Clear();
+    kickPattern_.clear();
+    snarePattern_.clear();
+    hatPattern_.clear();
   }
 
   friend SingletonApp;
@@ -32,12 +32,12 @@ public:
   /////////////////////////////////////////////////////////////////////////////
   /// @brief
   /// @param sample_rate
-  void Init(float sample_rate) override
+  void init(float sample_rate) override
   {
-    BaseApp::Init(sample_rate);
-    kick_.Init(sample_rate);
-    snare_.Init(sample_rate);
-    hat_.Init(sample_rate);
+    BaseApp::init(sample_rate);
+    kick_.init(sample_rate);
+    snare_.init(sample_rate);
+    hat_.init(sample_rate);
 
     kick_.t_.SetFreq(56.0F);
     kick_.t_.SetTone(.7f * random() / (float)RAND_MAX);
@@ -53,26 +53,26 @@ public:
     hat_.t_.SetTone(random() / (float)RAND_MAX);
     hat_.t_.SetNoisiness(random() / (float)RAND_MAX);
 
-    Music::BuildEuclid<MAX_EVENTS>(5, MAX_EVENTS, 1, kickPattern_);
-    Music::BuildEuclid<MAX_EVENTS>(7, MAX_EVENTS, 2, snarePattern_);
-    Music::BuildEuclid<MAX_EVENTS>(13, MAX_EVENTS, 1, hatPattern_);
+    music::build_euclid<MAX_EVENTS>(5, MAX_EVENTS, 1, kickPattern_);
+    music::build_euclid<MAX_EVENTS>(7, MAX_EVENTS, 2, snarePattern_);
+    music::build_euclid<MAX_EVENTS>(13, MAX_EVENTS, 1, hatPattern_);
   }
 
   /////////////////////////////////////////////////////////////////////////////
   /// @brief Processes the audio stream for all voices mixed into separate left
   /// & right values.
   /// @return left & right floating point values.
-  std::tuple<float, float> Process(bool trigger = false) override
+  std::tuple<float, float> process(bool trigger = false) override
   {
-    const std::size_t patternLength = kickPattern_.Count();
+    const std::size_t patternLength = kickPattern_.size();
     const bool isPatternStep = trigger && patternIndex_ < patternLength;
     bool kickTrigger = isPatternStep && kickPattern_[patternIndex_];
     bool snareTrigger = isPatternStep && snarePattern_[patternIndex_];
     bool hatTrigger = isPatternStep && hatPattern_[patternIndex_];
 
-    auto [kickL, kickR] = kick_.Process(kickTrigger);
-    // auto [snareL, snareR] = snare_.Process(snareTrigger);
-    auto [hatL, hatR] = hat_.Process(hatTrigger);
+    auto [kickL, kickR] = kick_.process(kickTrigger);
+    // auto [snareL, snareR] = snare_.process(snareTrigger);
+    auto [hatL, hatR] = hat_.process(hatTrigger);
     float snareL = 0.0F, snareR = 0.0F;
     // float hatL = 0.0F, hatR = 0.0F;
 
@@ -88,11 +88,11 @@ public:
   }
 
 protected:
-  void InternalUpdate(uint32_t nowMS) override
+  void internal_update(uint32_t nowMS) override
   {
-    kick_.Update(nowMS);
-    snare_.Update(nowMS);
-    hat_.Update(nowMS);
+    kick_.update(nowMS);
+    snare_.update(nowMS);
+    hat_.update(nowMS);
   }
 
 public:

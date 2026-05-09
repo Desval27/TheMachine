@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Pages/BasePage.h>
-#include <TheMachineApp.h>
+#include <TheMachine.h>
 #include <UIOverlord.h>
 #include <daisy.h>
 
-template<typename AppType>
+template<typename TApp>
 class MainPage : public BasePage<true>
 {
 public:
@@ -49,7 +49,7 @@ public:
   bool OnPotMoved(uint16_t potID, float newPosition) override
   {
     // Pot id corresponds to voice id
-    AppType& theApp = AppType::getInstance();
+    auto& theApp = TApp::get_instance();
     switch (potID) {
       case POT_1:
         theApp.kick_.config_.volume.SetFrom0to1(newPosition);

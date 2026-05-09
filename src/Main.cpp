@@ -2,11 +2,11 @@
 #include <daisysp.h>
 #include <dev/oled_ssd130x.h>
 
-#include <Monkey.h>
+#include <monkey.hpp>
 
 #include <MainPage.h>
 #include <Pages/DrumVoicePage.h>
-#include <TheMachineApp.h>
+#include <TheMachine.h>
 #include <UIOverlord.h>
 
 using namespace daisysp;
@@ -17,7 +17,7 @@ using namespace daisy;
 #define BUTTON_COUNT 5
 #define POT_COUNT 4
 
-using MyApp = App<>;
+using MyApp = TheMachine<>;
 using MyMainPage = MainPage<MyApp>;
 using MyOverlord = UIOverlord<SSD130xI2c128x64Driver,
                               ENCODER_COUNT,
@@ -31,7 +31,7 @@ using MyOverlord = UIOverlord<SSD130xI2c128x64Driver,
 DaisySeed hw;
 Metro clock;
 
-MyApp& theApp = MyApp::getInstance();
+MyApp& theApp = MyApp::get_instance();
 
 MyOverlord uiOverlord;
 MyMainPage mainPage;
@@ -46,7 +46,7 @@ struct OpenDrumVoicePageContext
 };
 
 void
-OpenDrumVoicePage(void* rawContext)
+open_drum_voice_page(void* rawContext)
 {
   auto* context = static_cast<OpenDrumVoicePageContext*>(rawContext);
   context->page->Bind(*context->config);
@@ -65,13 +65,13 @@ OpenDrumVoicePageContext voicePageContexts[] = {
 AbstractMenu::ItemConfig voiceMenuItems[] = {
   { .type = AbstractMenu::ItemType::callbackFunctionItem,
     .text = "KICK",
-    .asCallbackFunctionItem{ OpenDrumVoicePage, &voicePageContexts[0] } },
+    .asCallbackFunctionItem{ open_drum_voice_page, &voicePageContexts[0] } },
   { .type = AbstractMenu::ItemType::callbackFunctionItem,
     .text = "SNARE",
-    .asCallbackFunctionItem{ OpenDrumVoicePage, &voicePageContexts[1] } },
+    .asCallbackFunctionItem{ open_drum_voice_page, &voicePageContexts[1] } },
   { .type = AbstractMenu::ItemType::callbackFunctionItem,
     .text = "HAT",
-    .asCallbackFunctionItem{ OpenDrumVoicePage, &voicePageContexts[2] } },
+    .asCallbackFunctionItem{ open_drum_voice_page, &voicePageContexts[2] } },
 };
 
 const MyOverlord::EncoderConfig encoderConfig[ENCODER_COUNT] = {
@@ -101,7 +101,7 @@ AudioCallback(AudioHandle::InterleavingInputBuffer in,
   // Prepare the audio block
   for (size_t i = 0; i < size; i += 2) {
     bool t = clock.Process();
-    auto [sigL, sigR] = theApp.Process(t);
+    auto [sigL, sigR] = theApp.process(t);
     out[i] = sigL;
     out[i + 1] = sigR;
   }
@@ -111,17 +111,17 @@ AudioCallback(AudioHandle::InterleavingInputBuffer in,
 /// @brief
 /// @param sample_rate
 void
-InitComponents(float sample_rate)
+init_components(float sample_rate)
 {
   clock.Init(BPM / 60.0F, sample_rate);
-  theApp.Init(sample_rate);
+  theApp.init(sample_rate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief
 /// @param sample_rate
 void
-InitUi(float sample_rate)
+init_ui(float sample_rate)
 {
   voiceMenu.Init(voiceMenuItems,
                  ArrayLen(voiceMenuItems),
@@ -148,12 +148,12 @@ main(void)
   hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
 
   float sample_rate = hw.AudioSampleRate();
-  InitComponents(sample_rate);
-  InitUi(sample_rate);
+  init_components(sample_rate);
+  init_ui(sample_rate);
 
   hw.StartAudio(AudioCallback);
   while (1) {
     uiOverlord.ProcessUi();
-    theApp.Update(System::GetNow());
+    theApp.update(System::GetNow());
   }
 }
