@@ -13,20 +13,20 @@ class TheMachine
   : public BasicApp<MAX_DEGREES, SCALE_DEGREES>
   , public Singleton<TheMachine<MAX_DEGREES, SCALE_DEGREES>>
 {
-  using BaseApp = BasicApp<MAX_DEGREES, SCALE_DEGREES>;
-  using SingletonApp = Singleton<TheMachine<MAX_DEGREES, SCALE_DEGREES>>;
-  using DrumPattern = music::PatternEventSet<MAX_EVENTS>;
+  using TBasicApp = BasicApp<MAX_DEGREES, SCALE_DEGREES>;
+  using TSingletonApp = Singleton<TheMachine<MAX_DEGREES, SCALE_DEGREES>>;
+  using TDrumPattern = music::PatternEventSet<MAX_EVENTS>;
 
 private:
   TheMachine()
-    : BaseApp()
+    : TBasicApp()
   {
     kickPattern_.clear();
     snarePattern_.clear();
     hatPattern_.clear();
   }
 
-  friend SingletonApp;
+  friend TSingletonApp;
 
 public:
   /////////////////////////////////////////////////////////////////////////////
@@ -34,10 +34,10 @@ public:
   /// @param sample_rate
   void init(float sample_rate) override
   {
-    BaseApp::init(sample_rate);
-    kick_.init(sample_rate);
-    snare_.init(sample_rate);
-    hat_.init(sample_rate);
+    TBasicApp::init(sample_rate);
+    kick_.init(TBasicApp::setup, 0, sample_rate);
+    snare_.init(TBasicApp::setup, 0, sample_rate);
+    hat_.init(TBasicApp::setup, 0, sample_rate);
 
     kick_.t_.SetFreq(56.0F);
     kick_.t_.SetTone(.7f * random() / (float)RAND_MAX);
@@ -101,7 +101,7 @@ public:
   DrumVoice<daisysp::HiHat<daisysp::RingModNoise, daisysp::SwingVCA>> hat_;
 
   std::size_t patternIndex_{ 0 };
-  DrumPattern kickPattern_;
-  DrumPattern snarePattern_;
-  DrumPattern hatPattern_;
+  TDrumPattern kickPattern_;
+  TDrumPattern snarePattern_;
+  TDrumPattern hatPattern_;
 };
