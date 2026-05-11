@@ -40,18 +40,18 @@ public:
     hat_.init(TBasicApp::setup, 0, sample_rate);
 
     kick_.t_.SetFreq(56.0F);
-    kick_.t_.SetTone(.7f * random() / (float)RAND_MAX);
-    kick_.t_.SetDecay(random() / (float)RAND_MAX);
-    kick_.t_.SetSelfFmAmount(random() / (float)RAND_MAX);
+    kick_.t_.SetTone(.7f * rand() / (float)RAND_MAX);
+    kick_.t_.SetDecay(rand() / (float)RAND_MAX);
+    kick_.t_.SetSelfFmAmount(rand() / (float)RAND_MAX);
 
-    snare_.t_.SetDecay(random() / (float)RAND_MAX);
-    // snare_.t_.SetSnappy(random() / (float)RAND_MAX);
-    snare_.t_.SetTone(.8f * random() / (float)RAND_MAX);
+    snare_.t_.SetDecay(rand() / (float)RAND_MAX);
+    // snare_.t_.SetSnappy(rand() / (float)RAND_MAX);
+    snare_.t_.SetTone(.8f * rand() / (float)RAND_MAX);
 
-    hat_.t_.SetDecay(random() / (float)RAND_MAX);
-    hat_.t_.SetSustain((random() / (float)RAND_MAX) > .8f);
-    hat_.t_.SetTone(random() / (float)RAND_MAX);
-    hat_.t_.SetNoisiness(random() / (float)RAND_MAX);
+    hat_.t_.SetDecay(rand() / (float)RAND_MAX);
+    hat_.t_.SetSustain((rand() / (float)RAND_MAX) > .8f);
+    hat_.t_.SetTone(rand() / (float)RAND_MAX);
+    hat_.t_.SetNoisiness(rand() / (float)RAND_MAX);
 
     music::build_euclid<MAX_EVENTS>(5, MAX_EVENTS, 1, kickPattern_);
     music::build_euclid<MAX_EVENTS>(7, MAX_EVENTS, 2, snarePattern_);

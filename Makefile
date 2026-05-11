@@ -36,7 +36,7 @@ OPT = -Og
 #OPT = -Os
 C_INCLUDES += -I$(APP_INC) -I$(MONKEY_INC) -I$(MONKEY_DAYSEYE_INC) 
 
-CPP_STANDARD ?= -std=gnu++17
+CPP_STANDARD ?= -std=c++20
 
 #LDFLAGS += --specs=nosys.specs
 
