@@ -7,7 +7,7 @@
 #include <MainPage.h>
 #include <Pages/DrumVoicePage.h>
 #include <TheMachine.h>
-#include <UIOverlord.h>
+#include <ui_overlord.hpp>
 
 using namespace daisysp;
 using namespace daisy;

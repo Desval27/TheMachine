@@ -1,7 +1,7 @@
 #pragma once
 
-#include <BasicApp.h>
-#include <DrumVoice.h>
+#include <basic_app.hpp>
+#include <drum_voice.hpp>
 #include <monkey.hpp>
 #include <music/music.hpp>
 #include <singleton.hpp>
