@@ -124,7 +124,7 @@ void
 init_ui(float sample_rate)
 {
   voiceMenu.Init(voiceMenuItems,
-                 ArrayLen(voiceMenuItems),
+                 array_len(voiceMenuItems),
                  AbstractMenu::Orientation::leftRightSelectUpDownModify,
                  true);
 
